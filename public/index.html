@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservar sesión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   CONFIGURA ESTOS VALORES ANTES DE PUBLICAR
+   ============================================= */
+
+/* =============================================
+   ESTILOS GLOBALES
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --border: #e8e4de;
+  --border-hover: #c8c0b4;
+  --text: #1a1a18;
+  --text-muted: #888880;
+  --text-light: #b8b4ae;
+  --accent: #1a1a18;
+  --accent-fg: #ffffff;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+body {
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 4rem;
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  margin-bottom: 3rem;
+
+}
+.studio-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.studio-tagline {
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+/* STEPS */
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2.5rem;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.step { display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+.step.active { color: var(--text); }
+.step-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; transition: all 0.2s;
+}
+.step.active .step-dot { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.step-line { flex: 1; height: 1px; background: var(--border); min-width: 40px; }
+
+/* CARD LAYOUT */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 100%;
+  max-width: 720px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* SESSION TYPES */
+.section-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+.session-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--session-color, var(--border));
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.session-card:hover { border-color: var(--session-color, var(--border-hover)); opacity: 0.85; }
+.session-card.selected { border-color: var(--session-color, var(--accent)); box-shadow: 0 0 0 1px var(--session-color, var(--accent)); }
+.session-card.selected::after {
+  content: '✓';
+  position: absolute; top: 10px; right: 12px;
+  font-size: 12px; color: var(--session-color, var(--accent));
+}
+.session-title { font-size: 13px; font-weight: 400; margin-bottom: 2px; letter-spacing: 0.02em; }
+.session-price { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; margin-bottom: 3px; color: var(--session-color, var(--text)); }
+.session-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.session-desc { font-size: 11px; color: var(--text-muted); line-height: 1.55; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+
+.deposit-notice {
+  background: #fdf8f0;
+  border: 1px solid #e8d9be;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #6b5a3e;
+  margin-top: 1.2rem;
+}
+.deposit-notice strong {
+  font-weight: 500; color: #4a3d28; display: block;
+  margin-bottom: 6px; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.deposit-notice .deposit-intro { margin-bottom: 10px; }
+.deposit-notice .deposit-data-label {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #a08060; margin-bottom: 4px; display: block;
+}
+.deposit-notice .deposit-data { line-height: 2; }
+
+/* CALENDAR */
+.booking-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+@media(max-width:580px){ .booking-layout{grid-template-columns:1fr;} }
+
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+.cal-month {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px; font-weight: 300; letter-spacing: 0.03em;
+}
+.cal-nav {
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 30px; height: 30px;
+  cursor: pointer; color: var(--text-muted);
+  font-size: 12px; transition: all 0.1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-nav:hover { border-color: var(--border-hover); color: var(--text); }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-day-name {
+  text-align: center; font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-light);
+  padding: 6px 0 10px;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; border-radius: 50%; cursor: pointer;
+  transition: all 0.1s; color: var(--text);
+}
+.cal-day:hover:not(.disabled):not(.empty) { background: var(--bg); }
+.cal-day.disabled { color: var(--text-light); cursor: default; }
+.cal-day.empty { cursor: default; }
+.cal-day.today { font-weight: 500; }
+.cal-day.selected { background: var(--accent) !important; color: var(--accent-fg) !important; }
+.cal-day.has-slots::after {
+  content: ''; display: block; width: 3px; height: 3px;
+  border-radius: 50%; background: var(--text-muted);
+  margin: 1px auto 0; position: absolute; bottom: 2px;
+}
+
+/* TIME SLOTS */
+.divider { width: 1px; background: var(--border); }
+@media(max-width:580px){ .divider{display:none;} }
+
+.slots-section {}
+.selected-date-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px; font-weight: 300; letter-spacing: 0.02em;
+  margin-bottom: 1rem; color: var(--text-muted);
+}
+.slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slot-btn {
+  padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  text-align: center; font-size: 13px; font-weight: 300; font-family: 'Jost', sans-serif;
+  cursor: pointer; background: var(--surface); color: var(--text);
+  transition: all 0.1s;
+}
+.slot-btn:hover { border-color: var(--border-hover); }
+.slot-btn.selected { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.no-date-msg {
+  color: var(--text-light); font-size: 13px;
+  font-style: italic; font-family: 'Cormorant Garamond', serif;
+  font-size: 15px; line-height: 1.6;
+}
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:480px){ .form-grid{grid-template-columns:1fr;} }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+input, textarea {
+  font-family: 'Jost', sans-serif; font-weight: 300;
+  font-size: 14px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text);
+  outline: none; transition: border-color 0.15s;
+  width: 100%;
+}
+input:focus, textarea:focus { border-color: var(--border-hover); }
+textarea { resize: vertical; min-height: 80px; }
+
+/* BOOKING SUMMARY */
+.summary-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.summary-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  font-size: 13px; margin-bottom: 6px;
+}
+.summary-row:last-child { margin-bottom: 0; }
+.summary-key { color: var(--text-muted); }
+.summary-val { font-weight: 400; text-align: right; max-width: 60%; }
+
+/* BUTTONS */
+.btn {
+  padding: 12px 28px;
+  font-family: 'Jost', sans-serif; font-weight: 400; font-size: 13px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  cursor: pointer; transition: all 0.15s;
+  border: 1px solid var(--accent);
+}
+.btn-primary { background: var(--accent); color: var(--accent-fg); }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary { background: none; color: var(--text); border-color: var(--border); margin-right: 10px; }
+.btn-secondary:hover { border-color: var(--border-hover); }
+
+.btn-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; gap: 8px; }
+
+/* GOOGLE AUTH */
+.auth-area { margin-bottom: 1.5rem; }
+.auth-note { font-size: 12px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
+
+/* CONFIRMATION */
+.confirm-icon { font-size: 2.5rem; text-align: center; margin-bottom: 1rem; }
+.confirm-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem; font-weight: 300; text-align: center; margin-bottom: 0.5rem;
+}
+.confirm-sub { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 2rem; }
+
+/* SPINNER */
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SPECIAL REQUEST BUTTON */
+.special-req-btn {
+  width: 100%; margin-top: 1rem;
+  padding: 10px; border: 1px dashed var(--border-hover);
+  border-radius: var(--radius-sm); background: none;
+  font-family: 'Jost', sans-serif; font-size: 12px; font-weight: 300;
+  color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+.special-req-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* ADMIN PANEL */
+.admin-toggle {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--accent); color: var(--accent-fg);
+  border: none; border-radius: 50%; width: 40px; height: 40px;
+  font-size: 16px; cursor: pointer; opacity: 0.4;
+  transition: opacity 0.2s; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+}
+.admin-toggle:hover { opacity: 1; }
+
+.admin-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 200;
+  align-items: center; justify-content: center;
+}
+.admin-overlay.open { display: flex; }
+.admin-box {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 1.5rem; width: 90%; max-width: 480px;
+  max-height: 85vh; overflow-y: auto;
+}
+.admin-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 300; margin-bottom: 1rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.admin-close { background: none; border: none; cursor: pointer; font-size: 18px; color: var(--text-muted); }
+.blocked-list { margin-bottom: 1rem; }
+.blocked-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 6px;
+  font-size: 13px;
+}
+.blocked-item button {
+  background: none; border: none; cursor: pointer;
+  color: #991b1b; font-size: 12px; padding: 2px 6px;
+}
+.blocked-item button:hover { text-decoration: underline; }
+.admin-add { display: flex; gap: 8px; margin-bottom: 1rem; }
+.admin-add input { flex: 1; }
+.admin-add .btn { padding: 8px 14px; font-size: 12px; white-space: nowrap; }
+.admin-login { display: flex; flex-direction: column; gap: 10px; }
+.admin-login label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.admin-note { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-top: 0.5rem; }
+
+/* LOADING OVERLAY */
+.loading-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(250,249,247,0.8);
+  z-index: 50; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; font-size: 13px; color: var(--text-muted);
+}
+.loading-overlay.show { display: flex; }
+.spinner-lg {
+  width: 28px; height: 28px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* LOADING / ERROR */
+.status-msg {
+  padding: 12px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; margin-bottom: 1rem;
+}
+.status-msg.error { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+.status-msg.info { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     CONFIGURACIÓN — edita estos valores
+     ============================================================ -->
+<script>
+const CONFIG = {
+  studioName: "Lore Morales",
+  tagline: "Fotografía · Navojoa, Sonora",
+
+  // ── Tu correo (recibirás las solicitudes aquí) ───────────────
+  email: "loremoralesfoto@gmail.com",
+
+  // ── Contacto para horario especial ──────────────────────────
+  whatsapp: "526444308957",
+
+  // ── Contraseña del panel admin (para bloquear días) ─────────
+  adminPassword: "lore2024",
+
+  // ── Horarios disponibles por día (0=Dom … 6=Sáb) ────────────
+  availableHours: {
+    1: ["10:00","11:00","12:00","15:00","16:00","17:00","18:00"],
+    2: ["10:00","11:00","12:00","15:00","16:00","17:00","18:00"],
+    3: ["10:00","11:00","12:00","15:00","16:00","17:00","18:00"],
+    4: ["10:00","11:00","12:00","15:00","16:00","17:00","18:00"],
+    5: ["10:00","11:00","12:00","15:00","16:00","17:00","18:00"],
+    6: ["10:00","11:00","12:00","13:00","14:00","15:00","16:00"],
+  },
+
+  // ── Paquetes ─────────────────────────────────────────────────
+  sessions: [
+    { id:"caritas",     name:"Caritas",              price:"$2,300", duration:20, meta:"20 min · 5 fotos",    desc:"5 fotos digitales con retoque completo. 1 cambio. Diseño + impresión de caritas. Entrega en link de descarga." },
+    { id:"mini",        name:"Minisesión",            price:"$2,100", duration:20, meta:"20 min · 5 fotos",    desc:"5 fotos digitales con retoque completo. 1 cambio. Entrega en link de descarga." },
+    { id:"ilim30",      name:"Selección Ilimitada",   price:"$3,800", duration:30, meta:"30 min · Ilimitadas", desc:"Selección ilimitada con edición natural. Hasta 2 cambios. Entrega en link de descarga." },
+    { id:"sesion10",    name:"Sesión 10 fotos",       price:"$2,900", duration:60, meta:"60 min · 10 fotos",   desc:"10 fotos digitales con retoque completo. Hasta 2 cambios. Entrega en link de descarga." },
+    { id:"ilim60",      name:"Selección Ilimitada",   price:"$5,400", duration:60, meta:"60 min · Ilimitadas", desc:"Selección ilimitada con edición natural. Hasta 2 cambios. Entrega en link de descarga." },
+  ]
+};
+</script>
+
+<!-- ============================================================
+     HTML DE LA APP
+     ============================================================ -->
+
+<header>
+  <?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" style="display:block;margin:0 auto 12px;height:52px;width:auto;" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1208 251">
+  <g>
+    <path d="M152.64,207.98v-25.54h16.62v1.65h-14.78v10.14h12.55v1.58h-12.55v12.16h-1.83Z"/>
+    <path d="M215.98,208.16c-1.77,0-3.39-.37-4.86-1.12-1.46-.74-2.72-1.71-3.78-2.91-1.06-1.2-1.87-2.58-2.45-4.14s-.86-3.15-.86-4.78.31-3.33.92-4.89c.61-1.56,1.45-2.94,2.52-4.14,1.07-1.2,2.33-2.15,3.79-2.86,1.46-.71,3.04-1.06,4.75-1.06s3.4.38,4.87,1.13c1.47.76,2.73,1.74,3.78,2.97,1.04,1.22,1.85,2.61,2.43,4.15.58,1.55.86,3.11.86,4.69,0,1.73-.31,3.37-.92,4.93s-1.45,2.93-2.52,4.12c-1.07,1.19-2.33,2.13-3.79,2.84-1.46.71-3.05,1.06-4.75,1.06ZM205.87,195.21c0,1.46.25,2.87.74,4.23.49,1.35,1.19,2.55,2.09,3.6.9,1.04,1.97,1.88,3.22,2.5,1.25.62,2.61.94,4.1.94s2.92-.32,4.15-.97,2.29-1.5,3.17-2.57c.88-1.07,1.55-2.27,2.03-3.61.48-1.34.72-2.71.72-4.1,0-1.46-.25-2.87-.76-4.23-.5-1.35-1.21-2.55-2.1-3.6-.9-1.04-1.96-1.88-3.18-2.5-1.22-.62-2.57-.94-4.03-.94-1.54,0-2.93.32-4.17.97-1.25.65-2.31,1.51-3.2,2.57-.89,1.07-1.57,2.27-2.05,3.61-.48,1.34-.72,2.71-.72,4.1Z"/>
+    <path d="M281.91,184.1h-9.35v23.88h-1.83v-23.88h-9.35v-1.65h20.54v1.65Z"/>
+    <path d="M327.23,208.16c-1.77,0-3.39-.37-4.86-1.12-1.46-.74-2.72-1.71-3.78-2.91-1.06-1.2-1.87-2.58-2.45-4.14s-.86-3.15-.86-4.78.31-3.33.92-4.89c.61-1.56,1.45-2.94,2.52-4.14,1.07-1.2,2.33-2.15,3.79-2.86,1.46-.71,3.04-1.06,4.75-1.06s3.4.38,4.87,1.13c1.47.76,2.73,1.74,3.78,2.97,1.04,1.22,1.85,2.61,2.43,4.15.58,1.55.86,3.11.86,4.69,0,1.73-.31,3.37-.92,4.93s-1.45,2.93-2.52,4.12c-1.07,1.19-2.33,2.13-3.79,2.84-1.46.71-3.05,1.06-4.75,1.06ZM317.12,195.21c0,1.46.25,2.87.74,4.23.49,1.35,1.19,2.55,2.09,3.6.9,1.04,1.97,1.88,3.22,2.5,1.25.62,2.61.94,4.1.94s2.92-.32,4.15-.97,2.29-1.5,3.17-2.57c.88-1.07,1.55-2.27,2.03-3.61.48-1.34.72-2.71.72-4.1,0-1.46-.25-2.87-.76-4.23-.5-1.35-1.21-2.55-2.1-3.6-.9-1.04-1.96-1.88-3.18-2.5-1.22-.62-2.57-.94-4.03-.94-1.54,0-2.93.32-4.17.97-1.25.65-2.31,1.51-3.2,2.57-.89,1.07-1.57,2.27-2.05,3.61-.48,1.34-.72,2.71-.72,4.1Z"/>
+    <path d="M395.32,203.99c-2.47,2.78-5.34,4.17-8.6,4.17-1.73,0-3.33-.37-4.8-1.12-1.47-.74-2.74-1.73-3.79-2.95-1.06-1.22-1.88-2.61-2.48-4.17-.6-1.56-.9-3.14-.9-4.75s.29-3.3.88-4.86c.59-1.56,1.4-2.94,2.45-4.14,1.04-1.2,2.28-2.15,3.72-2.86,1.44-.71,3.01-1.06,4.71-1.06,1.27,0,2.42.14,3.43.41,1.02.28,1.93.66,2.73,1.15.8.49,1.5,1.08,2.09,1.76.59.68,1.08,1.43,1.49,2.25l-1.51.9c-.86-1.68-2.01-2.89-3.44-3.65-1.43-.75-3.04-1.13-4.84-1.13-1.51,0-2.88.32-4.1.97-1.22.65-2.27,1.5-3.13,2.55-.86,1.06-1.52,2.25-1.98,3.6-.46,1.34-.68,2.72-.68,4.14,0,1.51.26,2.94.79,4.3.53,1.36,1.25,2.55,2.18,3.58.92,1.03,2.01,1.85,3.25,2.46,1.25.61,2.59.92,4.03.92,1.56,0,3.04-.36,4.44-1.08,1.4-.72,2.75-1.86,4.05-3.42v-4.93h-5.79v-1.47h7.37v12.41h-1.58v-3.99Z"/>
+    <path d="M434.66,207.98v-25.54h10.61c1.08,0,2.07.23,2.99.68.91.46,1.7,1.06,2.36,1.82.66.75,1.17,1.61,1.55,2.55.37.95.56,1.9.56,2.86s-.14,1.84-.43,2.72-.7,1.66-1.22,2.36-1.16,1.27-1.91,1.73c-.74.46-1.56.75-2.45.9l6.37,9.93h-2.12l-6.19-9.64h-8.27v9.64h-1.83ZM436.5,196.65h8.96c.81,0,1.56-.18,2.23-.54.67-.36,1.25-.83,1.73-1.42.48-.59.85-1.26,1.1-2.01.25-.75.38-1.53.38-2.32s-.15-1.6-.45-2.36c-.3-.75-.71-1.42-1.22-2-.52-.58-1.12-1.04-1.8-1.38-.68-.35-1.42-.52-2.21-.52h-8.7v12.55Z"/>
+    <path d="M498,182.44h1.58l10.79,25.54h-1.94l-3.56-8.42h-12.19l-3.56,8.42h-1.98l10.86-25.54ZM504.37,198.05l-5.57-13.38-5.68,13.38h11.26Z"/>
+    <path d="M546.63,207.98v-25.54h16.62v1.65h-14.78v10.14h12.55v1.58h-12.55v12.16h-1.83Z"/>
+    <path d="M601.23,178.63l-1.26-.58,2.19-3.06h2.09l-3.02,3.63ZM600.37,207.98v-25.54h1.83v25.54h-1.83Z"/>
+    <path d="M649.28,182.44h1.58l10.79,25.54h-1.94l-3.56-8.42h-12.19l-3.56,8.42h-1.98l10.86-25.54ZM655.65,198.05l-5.58-13.38-5.68,13.38h11.26Z"/>
+    <path d="M724.26,202.77c-1.11,2.42-2.7,5.68-5.8,5.68-1.63,0-4.17-1.83-6.56-5.09-1.67,2.35-4.41,5.09-7.51,5.09-3.54,0-6.64-3.1-6.64-6.64s4.09-6.52,7-8.15c-1.07-1.71-2.78-4.13-2.78-6.2,0-3.18,2.58-5.64,5.72-5.64,2.74,0,4.53,1.71,4.53,4.37,0,2.82-1.71,4.49-4.02,5.88,1.83,2.62,3.7,5.21,5.64,7.75,1.35-1.71,3.22-5.21,5.69-5.21,1.35,0,2.5.87,2.5,2.58,0,1.31-.88,2.19-2.23,2.19-1.23,0-1.87-.95-1.87-1.91,0-.71-.12-.99-.4-.99-.36,0-2.07,1.79-3.34,3.9,1.99,2.54,4.21,5.21,6.4,5.21,1.55,0,2.78-2.19,3.14-3.02l.52.2ZM706.77,206.07c2.38,0,3.42-1.47,4.73-3.26-2.27-2.82-4.33-5.8-6.44-8.71-2.27,1.47-3.98,2.19-3.98,5.17,0,2.62,2.78,6.8,5.69,6.8ZM708,182.46c-1.79,0-2.94,1.23-2.94,3.06s1.55,4.17,2.78,6.04c2.07-.95,3.74-2.98,3.74-5.33s-1.55-3.78-3.58-3.78Z"/>
+    <path d="M764.6,207.98v-25.54h8.49c2.01,0,3.78.34,5.3,1.01,1.52.67,2.79,1.58,3.79,2.73,1.01,1.15,1.76,2.5,2.27,4.05s.76,3.2.76,4.95c0,1.94-.28,3.7-.85,5.27s-1.37,2.91-2.43,4.03-2.33,1.98-3.83,2.59c-1.5.61-3.17.92-5.02.92h-8.49ZM783.38,195.17c0-1.61-.23-3.09-.68-4.44s-1.12-2.52-2-3.51-1.95-1.75-3.22-2.3c-1.27-.55-2.73-.83-4.39-.83h-6.65v22.23h6.65c1.68,0,3.16-.28,4.44-.85,1.28-.56,2.36-1.35,3.22-2.36s1.52-2.19,1.96-3.54.67-2.82.67-4.41Z"/>
+    <path d="M822.62,207.98v-25.54h1.83v25.54h-1.83Z"/>
+    <path d="M878.37,186.69c-1.65-1.85-3.99-2.77-7.01-2.77-2.49,0-4.31.47-5.45,1.42s-1.71,2.22-1.71,3.83c0,.82.14,1.49.43,2.03.29.54.74,1,1.35,1.38.61.38,1.38.71,2.32.97.93.26,2.06.54,3.38.83,1.37.29,2.61.61,3.72.95s2.06.79,2.84,1.31c.78.53,1.38,1.18,1.8,1.94.42.77.63,1.71.63,2.84s-.22,2.11-.67,2.95c-.44.84-1.07,1.54-1.87,2.1s-1.76.99-2.88,1.28-2.36.43-3.72.43c-3.98,0-7.35-1.27-10.11-3.81l.97-1.47c1.08,1.13,2.4,2.02,3.96,2.68s3.31.99,5.25.99c2.23,0,3.97-.41,5.23-1.22,1.26-.81,1.89-2.05,1.89-3.7,0-.84-.17-1.55-.5-2.14-.34-.59-.83-1.1-1.49-1.53s-1.49-.8-2.5-1.12c-1.01-.31-2.18-.61-3.53-.9-1.37-.29-2.57-.59-3.61-.92-1.04-.32-1.92-.73-2.63-1.22-.71-.49-1.24-1.08-1.6-1.78s-.54-1.57-.54-2.63c0-1.15.22-2.17.66-3.06s1.06-1.64,1.85-2.25,1.74-1.07,2.84-1.38c1.1-.31,2.32-.47,3.67-.47,1.65,0,3.13.25,4.42.74s2.47,1.24,3.53,2.25l-.94,1.44Z"/>
+    <path d="M934.66,206.32v1.65h-17.01v-25.54h16.69v1.65h-14.85v10.04h12.98v1.58h-12.98v10.61h15.18Z"/>
+    <path d="M973.86,185.89v22.08h-1.83v-25.54h1.4l17.91,22.48v-22.48h1.83v25.54h-1.69l-17.62-22.08ZM984.94,177.98c-.53,0-1-.07-1.4-.22-.41-.14-.78-.31-1.12-.49s-.67-.35-.99-.5c-.32-.16-.67-.23-1.03-.23-.41,0-.73.08-.97.25-.24.17-.42.35-.54.56-.12.2-.2.4-.25.58-.05.18-.07.29-.07.34h-1.22c0-.1.04-.31.11-.63.07-.32.22-.66.45-1.01.23-.35.54-.66.94-.94.39-.28.92-.41,1.56-.41.48,0,.9.08,1.28.23.37.16.73.32,1.06.5.33.18.68.34,1.03.49.35.14.75.22,1.2.22.48,0,.86-.08,1.13-.25.28-.17.48-.35.61-.56.13-.2.21-.4.25-.58.04-.18.05-.29.05-.34h1.22c0,.12-.04.34-.12.67-.08.32-.24.65-.47.99-.23.34-.56.64-.99.92-.43.28-1.01.41-1.73.41Z"/>
+    <path d="M1042.38,208.16c-1.77,0-3.39-.37-4.86-1.12-1.46-.74-2.72-1.71-3.78-2.91-1.06-1.2-1.87-2.58-2.45-4.14-.58-1.56-.86-3.15-.86-4.78s.3-3.33.92-4.89,1.45-2.94,2.52-4.14c1.07-1.2,2.33-2.15,3.79-2.86,1.46-.71,3.04-1.06,4.75-1.06s3.4.38,4.87,1.13c1.47.76,2.73,1.74,3.78,2.97,1.04,1.22,1.85,2.61,2.43,4.15.57,1.55.86,3.11.86,4.69,0,1.73-.31,3.37-.92,4.93s-1.45,2.93-2.52,4.12-2.33,2.13-3.79,2.84-3.04,1.06-4.75,1.06ZM1032.27,195.21c0,1.46.24,2.87.74,4.23s1.19,2.55,2.09,3.6c.9,1.04,1.97,1.88,3.22,2.5,1.25.62,2.61.94,4.1.94s2.92-.32,4.15-.97c1.23-.65,2.29-1.5,3.16-2.57.88-1.07,1.55-2.27,2.03-3.61.48-1.34.72-2.71.72-4.1,0-1.46-.25-2.87-.76-4.23-.5-1.35-1.2-2.55-2.1-3.6-.9-1.04-1.96-1.88-3.18-2.5-1.22-.62-2.56-.94-4.03-.94-1.54,0-2.93.32-4.17.97-1.25.65-2.31,1.51-3.2,2.57-.89,1.07-1.57,2.27-2.05,3.61-.48,1.34-.72,2.71-.72,4.1Z"/>
+  </g>
+  <g>
+    <polygon points="60.55 51.56 76.47 51.56 76.47 49.11 28.43 49.11 28.43 51.66 44.33 51.66 44.33 158.56 28.43 158.56 28.43 161.11 60.55 161.11 60.55 51.56"/>
+    <path d="M109.53,124.52c0,26.05-7.17,32.51-28.94,33.78v2.81h31.49v-36.59h-2.55Z"/>
+  </g>
+  <g>
+    <polygon points="940.55 51.56 956.47 51.56 956.47 49.11 908.43 49.11 908.43 51.66 924.33 51.66 924.33 158.56 908.43 158.56 908.43 161.11 940.55 161.11 940.55 51.56"/>
+    <path d="M989.53,124.52c0,26.05-7.17,32.51-28.94,33.78v2.81h31.49v-36.59h-2.55Z"/>
+  </g>
+  <path d="M173.89,45.54c26.54,0,49.62,25.59,49.62,57.78s-23.08,57.78-49.62,57.78-49.62-25.59-49.62-57.78,23.08-57.78,49.62-57.78ZM173.89,158.59c27.95,0,31.72-34.7,31.72-55.27s-3.77-55.27-31.72-55.27-31.72,34.7-31.72,55.27,3.77,55.27,31.72,55.27Z"/>
+  <path d="M243.19,52.14h-15.7v-2.51h48.2c18.06,0,37.68,4.08,37.68,27.79,0,19.16-22.14,24.18-33.6,25.59v.31c18.06,1.57,27.63,5.5,29.99,26.22l2.2,19.16c1.1,9.26,5.5,9.89,8.16,9.89,2.83,0,4.87-.94,6.44-1.57l.94,2.04c-3.14,1.1-7.07,2.04-12.88,2.04-19.16,0-20.25-10.21-22.45-28.26l-1.1-9.42c-1.1-9.89-3.93-18.84-21.67-18.84h-10.21v53.07h16.02v2.51h-47.73v-2.51h15.7V52.14ZM259.21,102.07h7.85c18.53,0,29.36-6.44,29.36-24.65,0-12.56-4.24-25.28-26.54-25.28h-10.68v49.93Z"/>
+  <path d="M347.78,53.08h-13.82v-2.51h83.69l1.88,26.69h-2.51c0-18.06-11.93-24.18-28.58-24.18h-24.65v50.56h11.78c16.33,0,17.9-9.89,17.9-20.1h2.51v41.77h-2.51c0-11.93-1.57-19.16-18.06-19.16h-11.62v52.44h21.51c25.44,0,37.68-2.98,37.68-29.67h2.51v32.19h-91.54v-2.51h13.82V53.08Z"/>
+  <path d="M475.16,53.08h-13.82v-2.51h30.3l32.97,83.53,32.34-83.53h29.83v2.51h-13.82v105.51h13.82v2.51h-44.59v-2.51h14.76V59.05h-.31l-38.31,99.55h-1.41l-38.94-97.66h-.31v84.63c0,10.36,1.41,13.03,9.73,13.03h6.28v2.51h-32.34v-2.51h4.08c8.32,0,9.73-2.67,9.73-13.03V53.08Z"/>
+  <path d="M638.15,45.54c26.54,0,49.62,25.59,49.62,57.78s-23.08,57.78-49.62,57.78-49.62-25.59-49.62-57.78,23.08-57.78,49.62-57.78ZM638.15,158.59c27.95,0,31.72-34.7,31.72-55.27s-3.77-55.27-31.72-55.27-31.72,34.7-31.72,55.27,3.77,55.27,31.72,55.27Z"/>
+  <path d="M707.46,52.14h-15.7v-2.51h48.2c18.06,0,37.68,4.08,37.68,27.79,0,19.16-22.14,24.18-33.6,25.59v.31c18.06,1.57,27.63,5.5,29.99,26.22l2.2,19.16c1.1,9.26,5.5,9.89,8.16,9.89,2.83,0,4.87-.94,6.44-1.57l.94,2.04c-3.14,1.1-7.07,2.04-12.88,2.04-19.16,0-20.25-10.21-22.45-28.26l-1.1-9.42c-1.1-9.89-3.93-18.84-21.67-18.84h-10.21v53.07h16.02v2.51h-47.73v-2.51h15.7V52.14ZM723.48,102.07h7.85c18.53,0,29.36-6.44,29.36-24.65,0-12.56-4.24-25.28-26.54-25.28h-10.68v49.93Z"/>
+  <path d="M856.8,125.31h-33.6l-6.44,19.78c-1.1,3.14-2.35,6.91-2.35,9.58,0,2.2,1.88,3.92,6.91,3.92h8.17v2.51h-32.34v-2.51h5.02c4.87,0,6.91-.47,9.89-9.26l33.76-101.27h1.73l38.15,110.54h13.03v2.51h-46v-2.51h15.39l-11.3-33.29ZM839.84,75.22h-.31l-15.39,47.58h31.87l-16.17-47.58Z"/>
+  <path d="M1017.51,53.08h-13.82v-2.51h83.69l1.88,26.69h-2.51c0-18.06-11.93-24.18-28.58-24.18h-24.65v50.56h11.78c16.33,0,17.9-9.89,17.9-20.1h2.51v41.77h-2.51c0-11.93-1.57-19.16-18.06-19.16h-11.62v52.44h21.51c25.44,0,37.68-2.98,37.68-29.67h2.51v32.19h-91.54v-2.51h13.82V53.08Z"/>
+  <path d="M1109.23,119.81h2.51c0,26.38,15.54,38.78,34.39,38.78,15.07,0,25.91-9.58,25.91-23.71,0-16.33-8.48-21.2-26.54-24.02-24.65-3.92-36.27-8.01-36.27-34.39,0-17.9,11.78-30.93,29.36-30.93,16.17,0,22.3,9.58,27.63,9.58,3.61,0,4.08-3.93,4.55-5.97h2.51v32.97h-2.51c-1.41-17.9-11.15-34.07-32.19-34.07-13.35,0-22.77,8.79-22.77,23.24s5.34,17.27,31.4,21.98c22.92,4.08,32.34,11.46,32.34,31.87s-11.3,35.96-34.07,35.96c-15.7,0-24.02-8.16-29.83-8.16-3.77,0-3.92,3.92-3.92,6.59h-2.51v-39.72Z"/>
+</svg>
+  <div class="studio-tagline" id="studioTagline"></div>
+</header>
+
+<!-- Steps indicator -->
+<div class="steps" style="width:100%;max-width:720px">
+  <div class="step active" id="step1dot"><div class="step-dot">1</div><span>Sesión</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step2dot"><div class="step-dot">2</div><span>Fecha</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step3dot"><div class="step-dot">3</div><span>Datos</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step4dot"><div class="step-dot">4</div><span>Confirmar</span></div>
+</div>
+
+<!-- PANTALLA 1: Elegir sesión -->
+<div class="card" id="screen1">
+  <div class="section-label">Elige tu paquete</div>
+  <div class="sessions-grid" id="sessionsGrid"></div>
+  <div class="deposit-notice" id="depositNotice"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn1Next" disabled onclick="goTo(2)">Continuar</button>
+  </div>
+</div>
+
+<!-- PANTALLA 2: Calendario + Horario -->
+<div class="card" id="screen2" style="display:none">
+  <div class="section-label">Elige fecha y hora</div>
+  <div class="booking-layout">
+    <div>
+      <div class="cal-header">
+        <button class="cal-nav" id="calPrev">&#8592;</button>
+        <div class="cal-month" id="calMonth"></div>
+        <button class="cal-nav" id="calNext">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="slots-section">
+      <div class="selected-date-label" id="selectedDateLabel">
+        Selecciona un día disponible para ver los horarios
+      </div>
+      <div class="slots-grid" id="slotsGrid"></div>
+      <button class="special-req-btn" id="specialReqBtn" style="display:none" onclick="openSpecialRequest()">
+        ¿No encuentras el horario que necesitas? Solicita uno especial →
+      </button>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(1)">Atrás</button>
+    <button class="btn btn-primary" id="btn2Next" disabled onclick="goTo(3)">Continuar</button>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner-lg"></div>
+  <span>Verificando disponibilidad…</span>
+</div>
+
+<!-- ADMIN BUTTON -->
+<button class="admin-toggle" onclick="openAdmin()" title="Panel de administración">⚙</button>
+
+<!-- ADMIN OVERLAY -->
+<div class="admin-overlay" id="adminOverlay">
+  <div class="admin-box">
+    <div class="admin-title">
+      Panel de administración
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div id="adminLoginSection">
+      <div class="admin-login">
+        <label>Contraseña</label>
+        <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAdminPass()">
+        <button class="btn btn-primary" onclick="checkAdminPass()">Entrar</button>
+        <div id="adminPassError" style="color:#991b1b;font-size:12px;display:none">Contraseña incorrecta</div>
+      </div>
+    </div>
+    <div id="adminPanel" style="display:none">
+      <div class="section-label" style="margin-bottom:0.75rem">Días bloqueados</div>
+      <div class="blocked-list" id="blockedList"></div>
+      <div class="admin-add">
+        <input type="date" id="blockDateInput">
+        <button class="btn btn-primary" onclick="addBlockedDay()">Bloquear día</button>
+      </div>
+      <p class="admin-note">Los días bloqueados no aparecerán como disponibles en el calendario, sin importar el horario habitual.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA 3: Datos del cliente -->
+<div class="card" id="screen3" style="display:none">
+  <div class="section-label">Tus datos</div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label for="fname">Nombre</label>
+      <input type="text" id="fname" placeholder="Ana">
+    </div>
+    <div class="form-group">
+      <label for="lname">Apellido</label>
+      <input type="text" id="lname" placeholder="García">
+    </div>
+    <div class="form-group">
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" placeholder="ana@ejemplo.com">
+    </div>
+    <div class="form-group">
+      <label for="phone">Teléfono (opcional)</label>
+      <input type="tel" id="phone" placeholder="+52 664 000 0000">
+    </div>
+    <div class="form-group full">
+      <label for="notes">Notas o peticiones especiales</label>
+      <textarea id="notes" placeholder="Cuéntame un poco sobre tu sesión ideal, locación preferida, etc."></textarea>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(2)">Atrás</button>
+    <button class="btn btn-primary" id="btn3Next" onclick="goTo(4)">Revisar reserva</button>
+  </div>
+</div>
+
+<!-- PANTALLA 4: Confirmar -->
+<div class="card" id="screen4" style="display:none">
+  <div class="section-label">Confirma tu reserva</div>
+  <div class="summary-box" id="summaryBox"></div>
+  <div id="statusMsg"></div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo(3)">Atrás</button>
+    <button class="btn btn-primary" id="btnConfirm" onclick="confirmBooking()">
+      Confirmar reserva
+    </button>
+  </div>
+</div>
+
+<!-- PANTALLA 5: Confirmación final -->
+<div class="card" id="screen5" style="display:none;text-align:center">
+  <div class="confirm-icon">✦</div>
+  <div class="confirm-title">¡Solicitud enviada!</div>
+  <div class="confirm-sub" id="confirmSubMsg"></div>
+  <div class="summary-box" id="summaryBox2" style="text-align:left"></div>
+  <div id="calendarLinkArea" style="margin-top:1.2rem"></div>
+  <div style="margin-top:1.2rem;font-size:13px;color:var(--text-muted);line-height:1.7">
+    Se abrirá tu correo con los detalles para enviarnos la confirmación.<br>
+    Recuerda enviar tu anticipo de <strong style="font-weight:500">$900</strong> para apartar la fecha.
+  </div>
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT PRINCIPAL
+     ============================================================ -->
+<script>
+// ── Estado global ────────────────────────────────────────────
+const state = {
+  session: null, date: null, time: null,
+  name: '', email: '', phone: '', notes: '',
+  currentScreen: 1,
+  busySlots: [],
+};
+
+let blockedDays = JSON.parse(localStorage.getItem('lm_blocked') || '[]');
+let calCurrent = new Date(); calCurrent.setDate(1);
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+// ── Init ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Logo shown as image
+  document.getElementById('studioTagline').style.display = 'none';
+  renderSessions();
+  renderCalendar();
+});
+
+// ── Navegación ────────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.card[id^="screen"]').forEach(s => s.style.display = 'none');
+  document.getElementById(`screen${n}`).style.display = 'block';
+  state.currentScreen = n;
+  for (let i = 1; i <= 4; i++)
+    document.getElementById(`step${i}dot`).classList.toggle('active', i <= n);
+  if (n === 4) renderSummary();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ---- PANTALLA 1: Sesiones ----
+function renderSessions() {
+  const colors = ['#b07d62','#7a9e8e','#8e7aad','#c4935a','#5a8fa8'];
+  const grid = document.getElementById('sessionsGrid');
+  CONFIG.sessions.forEach((s, i) => {
+    const color = colors[i % colors.length];
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    card.style.setProperty('--session-color', color);
+    card.innerHTML = `
+      <div class="session-title">${s.name}</div>
+      <div class="session-price">${s.price}</div>
+      <div class="session-meta">${s.meta}</div>
+      <div class="session-desc">${s.desc}</div>`;
+    card.onclick = () => {
+      document.querySelectorAll('.session-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      state.session = { ...s, color };
+      document.getElementById('btn1Next').disabled = false;
+    };
+    grid.appendChild(card);
+  });
+
+  // Aviso de anticipo formateado
+  document.getElementById('depositNotice').innerHTML = `
+    <strong>Anticipo requerido — $900</strong>
+    <div class="deposit-intro">Se requiere un anticipo de $900 para confirmar tu cita, favor de enviar tu comprobante al correo <b style="font-weight:500">loremoralesfoto@gmail.com</b> o por WhatsApp al <b style="font-weight:500">64 44 30 89 57</b></div>
+    <span class="deposit-data-label">Datos de pago</span>
+    <div class="deposit-data">
+      Lorena Morales Ramonet<br>
+      Banco Santander<br>
+      CLABE: 014777260118637686<br>
+      Tarjeta: 5579 0900 4168 1520
+    </div>`;
+}
+
+// ── PANTALLA 2: Calendario ────────────────────────────────────
+function isBlocked(dt) {
+  return blockedDays.includes(dt.toISOString().split('T')[0]);
+}
+
+function renderCalendar() {
+  document.getElementById('calMonth').textContent = MONTHS[calCurrent.getMonth()] + ' ' + calCurrent.getFullYear();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['Lu','Ma','Mi','Ju','Vi','Sa','Do'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el);
+  });
+  const today = new Date(); today.setHours(0,0,0,0);
+  const firstDay = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), 1);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const totalDays = new Date(calCurrent.getFullYear(), calCurrent.getMonth() + 1, 0).getDate();
+  for (let i = 0; i < startOffset; i++) {
+    const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= totalDays; d++) {
+    const dt = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), d);
+    const dow = dt.getDay();
+    const isPast = dt < today;
+    const hasSlots = CONFIG.availableHours[dow] && CONFIG.availableHours[dow].length > 0;
+    const blocked = isBlocked(dt);
+    const isDisabled = isPast || !hasSlots || blocked;
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (isDisabled ? ' disabled' : '') + (dt.toDateString() === today.toDateString() ? ' today' : '');
+    el.textContent = d;
+    if (blocked) el.title = 'Día no disponible';
+    if (state.date && state.date.toDateString() === dt.toDateString()) el.classList.add('selected');
+    if (!isDisabled) {
+      el.onclick = () => {
+        state.date = dt; state.time = null;
+        document.getElementById('btn2Next').disabled = true;
+        renderCalendar(); loadSlotsForDate(dt);
+      };
+    }
+    grid.appendChild(el);
+  }
+}
+
+// ── Verificar horarios contra Google Calendar ─────────────────
+async function loadSlotsForDate(dt) {
+  const dow = dt.getDay();
+  const allSlots = CONFIG.availableHours[dow] || [];
+  const label = document.getElementById('selectedDateLabel');
+  const grid = document.getElementById('slotsGrid');
+  const specialBtn = document.getElementById('specialReqBtn');
+
+  label.innerHTML = `<span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;color:var(--text-muted)">${DAYS_SHORT[dow]} ${dt.getDate()} de ${MONTHS[dt.getMonth()].toLowerCase()}</span>`;
+  grid.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Verificando disponibilidad…</div>';
+  specialBtn.style.display = 'none'; state.busySlots = [];
+
+  // Consultar disponibilidad al servidor
+  try {
+    const fechaISO = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    const resp = await fetch(`/api/disponibilidad?fecha=${fechaISO}`);
+    const data = await resp.json();
+    if (!data.disponible) {
+      grid.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:8px 0;">Este día no está disponible.</div>';
+      specialBtn.style.display = 'block';
+      return;
+    }
+    state.busySlots = data.horasOcupadas || [];
+  } catch(e) {
+    state.busySlots = [];
+  }
+
+  allSlots.forEach(t => {
+    const [hh, mm] = t.split(':').map(Number);
+    const slotStart = new Date(dt); slotStart.setHours(hh, mm, 0, 0);
+    const slotEnd = new Date(slotStart); slotEnd.setMinutes(slotEnd.getMinutes() + (state.session?.duration||60));
+    const busy = state.busySlots.some(b => slotStart < b.end && slotEnd > b.start);
+    const btn = document.createElement('button');
+    btn.className = 'slot-btn' + (busy ? ' disabled' : '') + (state.time === t ? ' selected' : '');
+    btn.textContent = t; btn.disabled = busy;
+    btn.style.opacity = busy ? '0.3' : '1';
+    if (!busy) btn.onclick = () => {
+      state.time = t;
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('btn2Next').disabled = false;
+    };
+    grid.appendChild(btn);
+  });
+  specialBtn.style.display = 'block';
+}
+
+document.getElementById('calPrev').onclick = () => { calCurrent.setMonth(calCurrent.getMonth()-1); renderCalendar(); };
+document.getElementById('calNext').onclick = () => { calCurrent.setMonth(calCurrent.getMonth()+1); renderCalendar(); };
+
+// ── Solicitud de horario especial ─────────────────────────────
+function openSpecialRequest() {
+  const pkg = state.session ? `${state.session.name} (${state.session.price})` : '';
+  const dateStr = state.date ? `${DAYS_SHORT[state.date.getDay()]} ${state.date.getDate()} de ${MONTHS[state.date.getMonth()]}` : '';
+  const msg = encodeURIComponent(`Hola Lore! 🌸 Me gustaría solicitar un horario especial.\n\nPaquete: ${pkg}\nFecha preferida: ${dateStr}\nHorario deseado: \n\nGracias!`);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border-radius:var(--radius);padding:1.5rem;width:90%;max-width:380px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;margin-bottom:0.5rem;">Solicitar horario especial</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:1.2rem;line-height:1.6;">Contáctame directamente para encontrar el horario ideal para tu sesión.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="https://wa.me/${CONFIG.whatsapp}?text=${msg}" target="_blank"
+          style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid #25d366;border-radius:var(--radius-sm);text-decoration:none;color:var(--text);font-size:13px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.556 4.111 1.526 5.835L0 24l6.343-1.499A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.017-1.376l-.36-.214-3.727.881.916-3.635-.234-.374A9.755 9.755 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+          WhatsApp · 64 44 30 89 57
+        </a>
+        <a href="mailto:${CONFIG.email}?subject=Solicitud%20de%20horario%20especial&body=${msg}" target="_blank"
+          style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text);font-size:13px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Correo · loremoralesfoto@gmail.com
+        </a>
+      </div>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="margin-top:1rem;width:100%;padding:8px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--text-muted);">Cancelar</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+}
+
+// ── PANTALLA 4: Resumen ───────────────────────────────────────
+function renderSummary() {
+  const s = state;
+  state.name = `${document.getElementById('fname').value} ${document.getElementById('lname').value}`.trim();
+  state.email = document.getElementById('email').value;
+  state.phone = document.getElementById('phone').value;
+  state.notes = document.getElementById('notes').value;
+  const dateStr = s.date ? `${DAYS_SHORT[s.date.getDay()]} ${s.date.getDate()} de ${MONTHS[s.date.getMonth()]} ${s.date.getFullYear()}` : '—';
+  document.getElementById('summaryBox').innerHTML = `
+    <div class="summary-row"><span class="summary-key">Paquete</span><span class="summary-val">${s.session?.name||'—'}</span></div>
+    <div class="summary-row"><span class="summary-key">Precio</span><span class="summary-val">${s.session?.price||'—'}</span></div>
+    <div class="summary-row"><span class="summary-key">Duración</span><span class="summary-val">${s.session?.duration||'—'} min</span></div>
+    <div class="summary-row"><span class="summary-key">Fecha</span><span class="summary-val">${dateStr}</span></div>
+    <div class="summary-row"><span class="summary-key">Hora</span><span class="summary-val">${s.time||'—'}</span></div>
+    <div class="summary-row"><span class="summary-key">Nombre</span><span class="summary-val">${s.name||'—'}</span></div>
+    <div class="summary-row"><span class="summary-key">Email</span><span class="summary-val">${s.email||'—'}</span></div>
+    ${s.phone?`<div class="summary-row"><span class="summary-key">Teléfono</span><span class="summary-val">${s.phone}</span></div>`:''}
+    ${s.notes?`<div class="summary-row"><span class="summary-key">Notas</span><span class="summary-val">${s.notes}</span></div>`:''}`;
+  if (!document.getElementById('depositReminder')) {
+    const el = document.createElement('div');
+    el.id = 'depositReminder'; el.className = 'deposit-notice';
+    el.innerHTML = `<strong>Recuerda enviar tu anticipo de $900</strong>
+      <div class="deposit-intro">Favor de enviar tu comprobante al correo <b style="font-weight:500">loremoralesfoto@gmail.com</b> o por WhatsApp al <b style="font-weight:500">64 44 30 89 57</b></div>
+      <span class="deposit-data-label">Datos de pago</span>
+      <div class="deposit-data">Lorena Morales Ramonet<br>Banco Santander<br>CLABE: 014777260118637686<br>Tarjeta: 5579 0900 4168 1520</div>`;
+    document.getElementById('summaryBox').after(el);
+  }
+}
+// ── CONFIRMAR RESERVA vía EmailJS ────────────────────────────
+async function confirmBooking() {
+  const btn = document.getElementById('btnConfirm');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enviando…';
+
+  const { date, time, session, name, email, phone, notes } = state;
+
+  const [hh, mm] = time.split(':').map(Number);
+  const start = new Date(date); start.setHours(hh, mm, 0, 0);
+  const end   = new Date(start); end.setMinutes(end.getMinutes() + session.duration);
+  const dateStr = `${DAYS_SHORT[date.getDay()]} ${date.getDate()} de ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
+  // ── Link "Agregar a Google Calendar" ──────────────────────
+  function pad(n) { return String(n).padStart(2,'0'); }
+  function gcalDate(d) {
+    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  }
+  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${encodeURIComponent('Sesión fotográfica — ' + session.name)}`
+    + `&dates=${gcalDate(start)}/${gcalDate(end)}`
+    + `&details=${encodeURIComponent('Paquete: ' + session.name + ' ' + session.price + '\nEstudio: Lore Morales Fotografía\nWhatsApp: 64 44 30 89 57\n\nRecuerda enviar tu anticipo de $900')}`
+    + `&location=${encodeURIComponent('Navojoa, Sonora')}`;
+
+  // ── Parámetros para la plantilla de EmailJS ───────────────
+  // Estos nombres deben coincidir con las variables en tu plantilla
+  const templateParams = {
+    to_email:      CONFIG.email,          // a quién llega el aviso
+    reply_to:      email,                 // al responder vas directo al cliente
+    client_name:   name,
+    client_email:  email,
+    client_phone:  phone || 'No proporcionado',
+    package_name:  session.name,
+    package_price: session.price,
+    duration:      session.duration + ' min',
+    date:          dateStr,
+    time:          time,
+    notes:         notes || '—',
+    gcal_link:     gcalUrl,
+  };
+
+  try {
+    emailjs.init(CONFIG.emailjs_publicKey);
+    await emailjs.send(CONFIG.emailjs_serviceId, CONFIG.emailjs_templateId, templateParams);
+
+    // ── Pantalla de éxito ────────────────────────────────────
+    document.getElementById('confirmSubMsg').textContent = `${dateStr} a las ${time}`;
+    document.getElementById('summaryBox2').innerHTML = document.getElementById('summaryBox').innerHTML;
+    document.getElementById('calendarLinkArea').innerHTML = `
+      <a href="${gcalUrl}" target="_blank" style="
+        display:inline-flex;align-items:center;gap:8px;
+        padding:10px 20px;border:1px solid #4285F4;border-radius:var(--radius-sm);
+        text-decoration:none;color:#1a73e8;font-size:13px;
+        font-family:'Jost',sans-serif;font-weight:300;letter-spacing:0.04em;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Agregar a mi Google Calendar
+      </a>`;
+
+    goTo(5);
+    document.querySelectorAll('.steps').forEach(s => s.style.display = 'none');
+
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'Confirmar reserva';
+    showStatus('No se pudo enviar la solicitud. Por favor contáctanos por WhatsApp al 64 44 30 89 57.', 'error');
+  }
+}
+
+function showStatus(msg, type='info') {
+  document.getElementById('statusMsg').innerHTML = `<div class="status-msg ${type}">${msg}</div>`;
+}
+
+// ── PANEL ADMIN ───────────────────────────────────────────────
+function openAdmin() { document.getElementById('adminOverlay').classList.add('open'); }
+function closeAdmin() { document.getElementById('adminOverlay').classList.remove('open'); }
+
+function checkAdminPass() {
+  if (document.getElementById('adminPass').value === CONFIG.adminPassword) {
+    document.getElementById('adminLoginSection').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderBlockedList();
+  } else {
+    document.getElementById('adminPassError').style.display = 'block';
+  }
+}
+
+function renderBlockedList() {
+  const list = document.getElementById('blockedList');
+  if (!blockedDays.length) {
+    list.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No hay días bloqueados.</p>'; return;
+  }
+  list.innerHTML = blockedDays.sort().map(d => {
+    const dt = new Date(d + 'T12:00:00');
+    return `<div class="blocked-item">
+      <span>${DAYS_SHORT[dt.getDay()]} ${dt.getDate()} de ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}</span>
+      <button onclick="removeBlockedDay('${d}')">✕ Desbloquear</button>
+    </div>`;
+  }).join('');
+}
+
+function addBlockedDay() {
+  const val = document.getElementById('blockDateInput').value;
+  if (!val || blockedDays.includes(val)) return;
+  blockedDays.push(val);
+  localStorage.setItem('lm_blocked', JSON.stringify(blockedDays));
+  renderBlockedList(); renderCalendar();
+  document.getElementById('blockDateInput').value = '';
+}
+
+function removeBlockedDay(d) {
+  blockedDays = blockedDays.filter(x => x !== d);
+  localStorage.setItem('lm_blocked', JSON.stringify(blockedDays));
+  renderBlockedList(); renderCalendar();
+}
+</script>
+
+<!--
+  ================================================================
+  INSTRUCCIONES DE CONFIGURACIÓN — EmailJS (10 minutos, gratis)
+  ================================================================
+
+  EmailJS envía correos directo desde el navegador, sin servidor.
+  Plan gratuito: 200 correos/mes — suficiente para empezar.
+
+  PASO 1 — Crear cuenta
+  ──────────────────────
+  Ve a: https://www.emailjs.com/
+  Regístrate con tu cuenta de Google (loremoralesfoto@gmail.com)
+
+  PASO 2 — Conectar tu Gmail
+  ───────────────────────────
+  Panel izquierdo → "Email Services" → "Add New Service"
+  Elige Gmail → conecta loremoralesfoto@gmail.com → copia el "Service ID"
+  Pégalo en CONFIG.emailjs_serviceId
+
+  PASO 3 — Crear la plantilla del correo
+  ────────────────────────────────────────
+  Panel izquierdo → "Email Templates" → "Create New Template"
+
+  Configura así:
+    To email:   {{to_email}}
+    From name:  {{client_name}} (vía Lore Morales Booking)
+    Reply To:   {{reply_to}}
+    Subject:    Nueva reserva: {{package_name}} — {{client_name}} — {{date}}
+
+  Contenido del correo (copia y pega esto):
+  ─────────────────────────────────────────
+  Nueva solicitud de reserva 📸
+
+  Cliente:   {{client_name}}
+  Email:     {{client_email}}
+  Teléfono:  {{client_phone}}
+
+  Paquete:   {{package_name}} — {{package_price}}
+  Duración:  {{duration}}
+  Fecha:     {{date}}
+  Hora:      {{time}}
+
+  Notas: {{notes}}
+
+  ──────────────────────────────
+  ⚠️ Anticipo pendiente: $900
+  ──────────────────────────────
+
+  Agregar a Google Calendar: {{gcal_link}}
+  ─────────────────────────────────────────
+
+  Guarda → copia el "Template ID" → pégalo en CONFIG.emailjs_templateId
+
+  PASO 4 — Copiar tu Public Key
+  ──────────────────────────────
+  Panel izquierdo → "Account" → pestaña "API Keys"
+  Copia "Public Key" → pégala en CONFIG.emailjs_publicKey
+
+  PASO 5 — Subir a GitHub Pages
+  ──────────────────────────────
+  1. Crea un repositorio en GitHub (público)
+  2. Sube este archivo como index.html
+  3. Repositorio → Settings → Pages → Branch: main → Save
+  4. Tu URL será: https://TU_USUARIO.github.io/NOMBRE_REPO/
+
+  ¡Listo! Ya puedes recibir reservas sin que nadie tenga que
+  hacer login ni abrir su app de correo.
+  ================================================================
+-->
+</body>
+</html>
