@@ -147,66 +147,68 @@ app.post('/api/reservas', async (req, res) => {
     const fechaObj = new Date(fecha + 'T12:00:00');
     const fechaStr = `${dias[fechaObj.getDay()]} ${fechaObj.getDate()} de ${meses[fechaObj.getMonth()]} ${fechaObj.getFullYear()}`;
 
-    // Enviar correo de notificación
-    await resend.emails.send({
-      from: 'Lore Morales Booking <onboarding@resend.dev>',
-      to: process.env.SMTP_USER,
-      reply_to: email,
-      subject: `Nueva reserva #${reservaId}: ${paquete} — ${nombre} — ${fechaStr}`,
-      html: `
-        <!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f3f0;font-family:Georgia,serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3f0;padding:40px 20px;">
-          <tr><td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:8px;overflow:hidden;">
-            <tr><td style="background:#1a1a18;padding:32px 40px;text-align:center;">
-              <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#888;margin-bottom:10px;font-family:Arial,sans-serif;">Nueva solicitud de reserva #${reservaId}</div>
-              <div style="font-size:28px;color:#fff;letter-spacing:0.06em;">LORE MORALES</div>
-              <div style="font-size:10px;letter-spacing:0.14em;color:#888;margin-top:4px;font-family:Arial,sans-serif;text-transform:uppercase;">Fotografía & Diseño</div>
-            </td></tr>
-            <tr><td style="background:#f9f7f4;padding:24px 40px;text-align:center;border-bottom:1px solid #ede9e3;">
-              <div style="font-size:10px;color:#a89880;letter-spacing:0.12em;text-transform:uppercase;font-family:Arial,sans-serif;margin-bottom:6px;">Fecha solicitada</div>
-              <div style="font-size:22px;color:#1a1a18;">${fechaStr}</div>
-              <div style="font-size:15px;color:#555;margin-top:4px;font-family:Arial,sans-serif;">${hora} hrs</div>
-            </td></tr>
-            <tr><td style="padding:24px 40px 0;">
-              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#a89880;font-family:Arial,sans-serif;margin-bottom:12px;">Paquete</div>
-              <table width="100%" style="background:#f9f7f4;border-radius:6px;border:1px solid #ede9e3;">
-                <tr>
-                  <td style="padding:14px 18px;"><div style="font-size:17px;color:#1a1a18;">${paquete}</div><div style="font-size:12px;color:#888;font-family:Arial,sans-serif;margin-top:2px;">${duracion} min</div></td>
-                  <td style="padding:14px 18px;text-align:right;"><div style="font-size:22px;color:#1a1a18;">${precio}</div></td>
-                </tr>
-              </table>
-            </td></tr>
-            <tr><td style="padding:20px 40px 0;">
-              <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#a89880;font-family:Arial,sans-serif;margin-bottom:10px;">Cliente</div>
-              <table width="100%">
-                <tr><td style="padding:6px 0;border-bottom:1px solid #f0ece6;font-size:11px;color:#a89880;font-family:Arial,sans-serif;text-transform:uppercase;">Nombre</td><td style="padding:6px 0;border-bottom:1px solid #f0ece6;text-align:right;font-size:13px;font-family:Arial,sans-serif;">${nombre}</td></tr>
-                <tr><td style="padding:6px 0;border-bottom:1px solid #f0ece6;font-size:11px;color:#a89880;font-family:Arial,sans-serif;text-transform:uppercase;">Email</td><td style="padding:6px 0;border-bottom:1px solid #f0ece6;text-align:right;font-size:13px;font-family:Arial,sans-serif;">${email}</td></tr>
-                <tr><td style="padding:6px 0;border-bottom:1px solid #f0ece6;font-size:11px;color:#a89880;font-family:Arial,sans-serif;text-transform:uppercase;">Teléfono</td><td style="padding:6px 0;border-bottom:1px solid #f0ece6;text-align:right;font-size:13px;font-family:Arial,sans-serif;">${telefono||'No proporcionado'}</td></tr>
-                ${notas ? `<tr><td style="padding:6px 0;font-size:11px;color:#a89880;font-family:Arial,sans-serif;text-transform:uppercase;">Notas</td><td style="padding:6px 0;text-align:right;font-size:13px;font-family:Arial,sans-serif;">${notas}</td></tr>` : ''}
-              </table>
-            </td></tr>
-            <tr><td style="padding:20px 40px 0;">
-              <table width="100%" style="background:#fdf8f0;border:1px solid #e8d9be;border-radius:6px;">
-                <tr><td style="padding:14px 18px;">
-                  <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#a08060;font-family:Arial,sans-serif;margin-bottom:4px;">Anticipo requerido</div>
-                  <div style="font-size:20px;color:#4a3d28;">$900</div>
-                  <div style="font-size:11px;color:#7a6040;font-family:Arial,sans-serif;margin-top:4px;line-height:1.7;">Santander · Lorena Morales Ramonet<br>CLABE: 014777260118637686<br>Tarjeta: 5579 0900 4168 1520</div>
-                </td></tr>
-              </table>
-            </td></tr>
-            <tr><td style="padding:20px 40px;">
-              <a href="${gcalUrl}" style="display:inline-block;padding:10px 20px;border:1px solid #4285F4;border-radius:6px;text-decoration:none;color:#1a73e8;font-size:13px;font-family:Arial,sans-serif;">+ Agregar al calendario</a>
-            </td></tr>
-            <tr><td style="background:#f9f7f4;border-top:1px solid #ede9e3;padding:16px 40px;text-align:center;">
-              <div style="font-size:11px;color:#b8b4ae;font-family:Arial,sans-serif;">loremoralesfoto@gmail.com · WhatsApp 64 44 30 89 57</div>
+    // ── Notificar a Google Sheets ─────────────────────────────
+    try {
+      await fetch(process.env.SHEETS_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservaId, nombre, email, telefono, paquete, precio, fecha, hora, notas })
+      });
+      console.log(`✓ Google Sheets notificado para reserva #${reservaId}`);
+    } catch(sheetsErr) {
+      console.error('⚠️ Google Sheets error:', sheetsErr.message);
+    }
+
+    // ── Notificar por WhatsApp (Callmebot) ────────────────────
+    try {
+      const waMsg = encodeURIComponent(`📸 Nueva reserva #${reservaId}\n👤 ${nombre}\n📦 ${paquete} ${precio}\n📅 ${fechaStr} · ${hora}\n📧 ${email}\n📱 ${telefono||'N/A'}`);
+      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${process.env.WA_PHONE}&text=${waMsg}&apikey=${process.env.WA_APIKEY}`);
+      console.log(`✓ WhatsApp notificado para reserva #${reservaId}`);
+    } catch(waErr) {
+      console.error('⚠️ WhatsApp error:', waErr.message);
+    }
+
+    // Intentar enviar correo (no bloquea la reserva si falla)
+    try {
+      await resend.emails.send({
+        from: 'Lore Morales Booking <onboarding@resend.dev>',
+        to: process.env.SMTP_USER,
+        reply_to: email,
+        subject: `Nueva reserva #${reservaId}: ${paquete} — ${nombre} — ${fechaStr}`,
+        html: `
+          <!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f3f0;font-family:Georgia,serif;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3f0;padding:40px 20px;">
+            <tr><td align="center">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:8px;overflow:hidden;">
+              <tr><td style="background:#1a1a18;padding:32px 40px;text-align:center;">
+                <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#888;margin-bottom:10px;font-family:Arial,sans-serif;">Nueva solicitud de reserva #${reservaId}</div>
+                <div style="font-size:28px;color:#fff;letter-spacing:0.06em;">LORE MORALES</div>
+              </td></tr>
+              <tr><td style="background:#f9f7f4;padding:24px 40px;text-align:center;border-bottom:1px solid #ede9e3;">
+                <div style="font-size:22px;color:#1a1a18;">${fechaStr}</div>
+                <div style="font-size:15px;color:#555;margin-top:4px;font-family:Arial,sans-serif;">${hora} hrs · ${paquete} · ${precio}</div>
+              </td></tr>
+              <tr><td style="padding:20px 40px;">
+                <div style="font-family:Arial,sans-serif;font-size:13px;line-height:2;color:#1a1a18;">
+                  <b>Cliente:</b> ${nombre}<br>
+                  <b>Email:</b> ${email}<br>
+                  <b>Teléfono:</b> ${telefono||'No proporcionado'}<br>
+                  ${notas ? `<b>Notas:</b> ${notas}` : ''}
+                </div>
+              </td></tr>
+              <tr><td style="padding:0 40px 20px;">
+                <a href="${gcalUrl}" style="display:inline-block;padding:10px 20px;border:1px solid #4285F4;border-radius:6px;text-decoration:none;color:#1a73e8;font-size:13px;font-family:Arial,sans-serif;">+ Agregar al calendario</a>
+              </td></tr>
+            </table>
             </td></tr>
           </table>
-          </td></tr>
-        </table>
-        </body></html>
-      `
-    });
+          </body></html>`
+      });
+      console.log(`✓ Correo enviado para reserva #${reservaId}`);
+    } catch(emailErr) {
+      console.error(`⚠️ Correo no enviado para reserva #${reservaId}:`, emailErr.message);
+      // La reserva YA está guardada — solo falló el correo
+    }
 
     res.json({ ok: true, reservaId, gcalUrl });
 
