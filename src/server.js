@@ -147,25 +147,22 @@ app.post('/api/reservas', async (req, res) => {
     const fechaObj = new Date(fecha + 'T12:00:00');
     const fechaStr = `${dias[fechaObj.getDay()]} ${fechaObj.getDate()} de ${meses[fechaObj.getMonth()]} ${fechaObj.getFullYear()}`;
 
-    // ── Notificar a Google Sheets ─────────────────────────────
-    try {
-      await fetch(process.env.SHEETS_WEBHOOK, {
+    // Responder al cliente INMEDIATAMENTE
+    res.json({ ok: true, reservaId, gcalUrl });
+
+    // Notificaciones en segundo plano (no bloquean la respuesta)
+    if (process.env.SHEETS_WEBHOOK) {
+      fetch(process.env.SHEETS_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reservaId, nombre, email, telefono, paquete, precio, fecha, hora, notas })
-      });
-      console.log(`✓ Google Sheets notificado para reserva #${reservaId}`);
-    } catch(sheetsErr) {
-      console.error('⚠️ Google Sheets error:', sheetsErr.message);
+      }).then(() => console.log(`✓ Sheets #${reservaId}`)).catch(e => console.error('Sheets:', e.message));
     }
 
-    // ── Notificar por WhatsApp (Callmebot) ────────────────────
-    try {
-      const waMsg = encodeURIComponent(`📸 Nueva reserva #${reservaId}\n👤 ${nombre}\n📦 ${paquete} ${precio}\n📅 ${fechaStr} · ${hora}\n📧 ${email}\n📱 ${telefono||'N/A'}`);
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=${process.env.WA_PHONE}&text=${waMsg}&apikey=${process.env.WA_APIKEY}`);
-      console.log(`✓ WhatsApp notificado para reserva #${reservaId}`);
-    } catch(waErr) {
-      console.error('⚠️ WhatsApp error:', waErr.message);
+    if (process.env.WA_PHONE && process.env.WA_APIKEY) {
+      const waMsg = encodeURIComponent(`📸 Reserva #${reservaId}\n👤 ${nombre}\n📦 ${paquete} ${precio}\n📅 ${fechaStr} ${hora}\n📧 ${email}`);
+      fetch(`https://api.callmebot.com/whatsapp.php?phone=${process.env.WA_PHONE}&text=${waMsg}&apikey=${process.env.WA_APIKEY}`)
+        .then(() => console.log(`✓ WA #${reservaId}`)).catch(e => console.error('WA:', e.message));
     }
 
     // Intentar enviar correo (no bloquea la reserva si falla)
@@ -209,8 +206,6 @@ app.post('/api/reservas', async (req, res) => {
       console.error(`⚠️ Correo no enviado para reserva #${reservaId}:`, emailErr.message);
       // La reserva YA está guardada — solo falló el correo
     }
-
-    res.json({ ok: true, reservaId, gcalUrl });
 
   } catch (err) {
     console.error(err);
