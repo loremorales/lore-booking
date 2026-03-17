@@ -215,9 +215,9 @@ app.post('/api/reservas', async (req, res) => {
 
     res.json({ ok: true, reservaId, gcalUrl });
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear la reserva' });
+ } catch (err) {
+    console.error('ERROR RESERVA:', err.message, err.code);
+    res.status(500).json({ error: err.message });
   }
 });
 
