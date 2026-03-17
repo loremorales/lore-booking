@@ -1,12 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 // ── Middleware ────────────────────────────────────────────────
 app.use(cors());
@@ -56,13 +57,7 @@ async function initDB() {
 }
 
 // ── Nodemailer ────────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+
 
 // ── RUTAS API ─────────────────────────────────────────────────
 
@@ -153,10 +148,10 @@ app.post('/api/reservas', async (req, res) => {
     const fechaStr = `${dias[fechaObj.getDay()]} ${fechaObj.getDate()} de ${meses[fechaObj.getMonth()]} ${fechaObj.getFullYear()}`;
 
     // Enviar correo de notificación
-    await transporter.sendMail({
-      from: `"Lore Morales Booking" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: 'Lore Morales Booking <onboarding@resend.dev>',
       to: process.env.SMTP_USER,
-      replyTo: email,
+      reply_to: email,
       subject: `Nueva reserva #${reservaId}: ${paquete} — ${nombre} — ${fechaStr}`,
       html: `
         <!DOCTYPE html><html><body style="margin:0;padding:0;background:#f5f3f0;font-family:Georgia,serif;">
@@ -215,9 +210,9 @@ app.post('/api/reservas', async (req, res) => {
 
     res.json({ ok: true, reservaId, gcalUrl });
 
- } catch (err) {
-    console.error('ERROR RESERVA:', err.message, err.code);
-    res.status(500).json({ error: err.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al crear la reserva' });
   }
 });
 
