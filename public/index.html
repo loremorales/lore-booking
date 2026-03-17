@@ -823,60 +823,47 @@ function renderSummary() {
     document.getElementById('summaryBox').after(el);
   }
 }
-// ── CONFIRMAR RESERVA vía EmailJS ────────────────────────────
+// ── CONFIRMAR RESERVA vía API ────────────────────────────────
 async function confirmBooking() {
   const btn = document.getElementById('btnConfirm');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Enviando…';
 
   const { date, time, session, name, email, phone, notes } = state;
-
-  const [hh, mm] = time.split(':').map(Number);
-  const start = new Date(date); start.setHours(hh, mm, 0, 0);
-  const end   = new Date(start); end.setMinutes(end.getMinutes() + session.duration);
   const dateStr = `${DAYS_SHORT[date.getDay()]} ${date.getDate()} de ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
-
-  // ── Link "Agregar a Google Calendar" ──────────────────────
-  function pad(n) { return String(n).padStart(2,'0'); }
-  function gcalDate(d) {
-    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-  }
-  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
-    + `&text=${encodeURIComponent('Sesión fotográfica — ' + session.name)}`
-    + `&dates=${gcalDate(start)}/${gcalDate(end)}`
-    + `&details=${encodeURIComponent('Paquete: ' + session.name + ' ' + session.price + '\nEstudio: Lore Morales Fotografía\nWhatsApp: 64 44 30 89 57\n\nRecuerda enviar tu anticipo de $900')}`
-    + `&location=${encodeURIComponent('Navojoa, Sonora')}`;
-
-  // ── Parámetros para la plantilla de EmailJS ───────────────
-  // Estos nombres deben coincidir con las variables en tu plantilla
-  const templateParams = {
-    to_email:      CONFIG.email,          // a quién llega el aviso
-    reply_to:      email,                 // al responder vas directo al cliente
-    client_name:   name,
-    client_email:  email,
-    client_phone:  phone || 'No proporcionado',
-    package_name:  session.name,
-    package_price: session.price,
-    duration:      session.duration + ' min',
-    date:          dateStr,
-    time:          time,
-    notes:         notes || '—',
-    gcal_link:     gcalUrl,
-  };
+  const fechaISO = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 
   try {
-    emailjs.init(CONFIG.emailjs_publicKey);
-    await emailjs.send(CONFIG.emailjs_serviceId, CONFIG.emailjs_templateId, templateParams);
+    const res = await fetch('/api/reservas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: name,
+        email,
+        telefono: phone || '',
+        paquete: session.name,
+        precio: session.price,
+        duracion: session.duration,
+        fecha: fechaISO,
+        hora: time,
+        notas: notes || ''
+      })
+    });
 
-    // ── Pantalla de éxito ────────────────────────────────────
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al crear la reserva');
+
+    function pad(n) { return String(n).padStart(2,'0'); }
+    function gcalDate(d) { return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`; }
+    const [hh, mm] = time.split(':').map(Number);
+    const start = new Date(date); start.setHours(hh, mm, 0, 0);
+    const end = new Date(start); end.setMinutes(end.getMinutes() + session.duration);
+    const gcalUrl = data.gcalUrl || `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('📸 ' + name + ' — ' + session.name)}&dates=${gcalDate(start)}/${gcalDate(end)}`;
+
     document.getElementById('confirmSubMsg').textContent = `${dateStr} a las ${time}`;
     document.getElementById('summaryBox2').innerHTML = document.getElementById('summaryBox').innerHTML;
     document.getElementById('calendarLinkArea').innerHTML = `
-      <a href="${gcalUrl}" target="_blank" style="
-        display:inline-flex;align-items:center;gap:8px;
-        padding:10px 20px;border:1px solid #4285F4;border-radius:var(--radius-sm);
-        text-decoration:none;color:#1a73e8;font-size:13px;
-        font-family:'Jost',sans-serif;font-weight:300;letter-spacing:0.04em;">
+      <a href="${gcalUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid #4285F4;border-radius:var(--radius-sm);text-decoration:none;color:#1a73e8;font-size:13px;font-family:'Jost',sans-serif;font-weight:300;letter-spacing:0.04em;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -892,7 +879,7 @@ async function confirmBooking() {
   } catch(err) {
     btn.disabled = false;
     btn.textContent = 'Confirmar reserva';
-    showStatus('No se pudo enviar la solicitud. Por favor contáctanos por WhatsApp al 64 44 30 89 57.', 'error');
+    showStatus(err.message || 'No se pudo enviar. Contáctanos por WhatsApp al 64 44 30 89 57.', 'error');
   }
 }
 
